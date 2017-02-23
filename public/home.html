@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twilio chat rest</title>
+	<style>
+		.hero-widget { text-align: center; padding-top: 20px; padding-bottom: 20px; }
+		.hero-widget .icon { display: block; font-size: 96px; line-height: 96px; margin-bottom: 10px; text-align: center; }
+		.hero-widget var { display: block; height: 64px; font-size: 64px; line-height: 64px; font-style: normal; }
+		.hero-widget label { font-size: 17px; }
+		.hero-widget .options { margin-top: 10px; }
+	</style>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+<br>
+	<div class="container">
+		<div class="row">
+	        <div class="col-sm-3">
+	            <div class="hero-widget well well-sm">
+	                <div class="icon">
+	                     <i class="glyphicon glyphicon-star"></i>
+	                </div>
+	                <div class="text">
+	                    <var id="service"></var>
+	                    <label class="text-muted">Services</label><hr>
+	                    <div id="serviceList"></div>
+	                </div>
+	            </div>
+			</div>
+			<div class="col-sm-3">
+	            <div class="hero-widget well well-sm channelBlock">
+	                <div class="text">
+	                    <var id="channel"></var>
+	                    <label class="text-muted">Channels</label><hr>
+	                    <div id="channelList"></div>
+	                </div>
+	            </div>
+			</div>
+			<div class="col-sm-3">
+	            <div class="hero-widget well well-sm userBlock">
+	                <div class="text">
+	                    <var id="user"></var>
+	                    <label class="text-muted">Users</label><hr>
+	                    <div id="userLists"></div>
+	                </div>
+	            </div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<script src="https://media.twiliocdn.com/sdk/js/common/v0.1/twilio-common.min.js"></script>
+	<script src="https://media.twiliocdn.com/sdk/js/chat/v0.11/twilio-chat.min.js"></script>
+	<script>
+		(function(){
+			$.ajax({
+			  	url: "https://chat.twilio.com/v1/Services",
+			  	type: "GET",
+			  	beforeSend: function (xhr) {
+			    	xhr.setRequestHeader ("Authorization", "Basic " + btoa('AC05f05d86a9f7695c2467446778a0ef26' + ":" + 'd9d2c3f0b423c372b23b5e0763f18234'));
+				}	
+			}).done(function(data) {
+
+				var services = data.services;
+				
+				$("#service").html(services.length);
+
+				$.each(services, function(key,val){
+					$("#serviceList").append('<button class="btn btn-info serviceButton" channels="'+val.links.channels+'" users="'+val.links.users+'">'+val.friendly_name+'</button> ');
+					console.log(val);
+				});
+			});
+
+			$(document).on('click','.serviceButton',function(){
+				
+				var channels = $(this).attr('channels');
+				var users = $(this).attr('users');
+
+				$.ajax({
+				  	url: channels,
+				  	type: "GET",
+				  	beforeSend: function (xhr) {
+				    	xhr.setRequestHeader ("Authorization", "Basic " + btoa('AC05f05d86a9f7695c2467446778a0ef26' + ":" + 'd9d2c3f0b423c372b23b5e0763f18234'));
+					}
+				}).done(function(data) {
+					var channels = data.channels;
+				
+					$("#channel").html(channels.length);
+
+					$.each(channels, function(key,val){
+						$("#channelList").append('<button class="btn btn-info channelButton" channel="'+val.url+'" users="'+val.members_count+'">'+val.unique_name+'</button> <br><br>');
+						// console.log(val);
+					});
+				});
+
+				$.ajax({
+				  	url: users,
+				  	type: "GET",
+				  	beforeSend: function (xhr) {
+				    	xhr.setRequestHeader ("Authorization", "Basic " + btoa('AC05f05d86a9f7695c2467446778a0ef26' + ":" + 'd9d2c3f0b423c372b23b5e0763f18234'));
+					}
+				}).done(function(data) {
+					var users = data.users;
+				
+					$("#user").html(users.length);
+
+					$.each(users, function(key,val){
+						$("#userLists").append('<button class="btn btn-info userButton" user_channels="'+val.user_channels+'" url="'+val.url+'">'+val.identity+'</button> <br><br>');
+						// console.log(val);
+					});
+				});
+			});
+		})(jQuery);
+	</script>
+</body>
+</html>
